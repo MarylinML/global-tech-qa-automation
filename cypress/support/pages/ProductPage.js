@@ -20,31 +20,31 @@ export class ProductPage {
  purchaseMostExpensiveProduct(name, card) {
         this.elements.monitorCategory().click();
         
-        // ESPERA AUTOMÁTICA: En lugar de sleep, esperamos que carguen los productos
+        // Esperamos a que los productos carguen
         this.elements.productCards().should('be.visible');
 
         let maxPrice = 0;
-        let mostExpensiveElement;
+        let mostExpensiveName = '';
 
-        // LÓGICA DINÁMICA: Iterar sobre los productos para encontrar el mayor precio
+        // Iterar para encontrar el precio y el NOMBRE del más caro
         cy.get('.card').each(($el) => {
             const priceText = $el.find('h5').text().replace('$', '');
             const price = parseFloat(priceText);
+            const productName = $el.find('a.hrefch').text();
 
             if (price > maxPrice) {
                 maxPrice = price;
-                mostExpensiveElement = $el.find('a.hrefch');
+                mostExpensiveName = productName.trim();
             }
         }).then(() => {
-            // Hacer clic en el que resultó ser el más caro
-            cy.wrap(mostExpensiveElement).click();
+            // En lugar de usar el elemento viejo, buscamos el nombre y hacemos clic
+            // Esto evita el error de "Detached from DOM"
+            cy.contains('a.hrefch', mostExpensiveName).click();
             
-            // Flujo de compra
             this.elements.addToCartBtn().click();
             this.elements.cartLink().click();
             this.elements.placeOrderBtn().click();
             
-            // Llenado de formulario
             cy.get('#name').type(name);
             cy.get('#card').type(card);
             cy.contains('Purchase').click();
