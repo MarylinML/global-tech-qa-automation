@@ -16,3 +16,9 @@ Suite de automatización End-to-End para asegurar los flujos críticos de E-comm
 
 ## SQL
 - La consulta para el reporte VIP se encuentra en `sql/query.sql`.
+
+### Performance Testing (Bonus)
+Se incluyó un script de carga utilizando **k6** para validar el SLA (Service Level Agreement) del endpoint de reservas.
+- **Carga:** 20 VUs (Virtual Users).
+- **Umbral:** p(95) < 800ms.
+- **Ubicación:** `performance/load-test.js`
