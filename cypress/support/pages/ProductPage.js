@@ -11,13 +11,14 @@ export class ProductPage {
         productPrice: () => cy.get('h5'),
         addToCartBtn: () => cy.contains('Add to cart'),
         cartLink: () => cy.get('#cartur'),
-        placeOrderBtn: () => cy.get('.btn-success').contains('Place Order')}
+        placeOrderBtn: () => cy.get('.btn-success').contains('Place Order')
+    }
 
     /**
      * @method purchaseMostExpensiveProduct
      * @description Encuentra dinámicamente el producto con el precio más alto y lo compra.
      */
- purchaseMostExpensiveProduct(name, card) {
+    purchaseMostExpensiveProduct(name, card) {
         this.elements.monitorCategory().click();
         
         // Esperamos a que los productos carguen
@@ -37,17 +38,22 @@ export class ProductPage {
                 mostExpensiveName = productName.trim();
             }
         }).then(() => {
-            // En lugar de usar el elemento viejo, buscamos el nombre y hacemos clic
-            // Esto evita el error de "Detached from DOM"
+            // Buscamos el nombre y hacemos clic
             cy.contains('a.hrefch', mostExpensiveName).click();
             
+            // Manejo de la alerta y flujo de carrito
             this.elements.addToCartBtn().click();
             this.elements.cartLink().click();
-            this.elements.placeOrderBtn().click();
             
-            cy.get('#name').type(name);
-            cy.get('#card').type(card);
-            cy.contains('Purchase').click();
+            // Esperar a que el botón de pedido sea visible antes de clicar
+            this.elements.placeOrderBtn().should('be.visible').click();
+            
+            // Llenado de formulario con pequeños ajustes de estabilidad
+            cy.get('#name').should('be.visible').type(name, { force: true });
+            cy.get('#card').should('be.visible').type(card, { force: true });
+            
+            // Clic final en Purchase
+            cy.contains('button', 'Purchase').click({ force: true });
         });
     }
 }

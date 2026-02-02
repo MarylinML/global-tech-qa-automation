@@ -17,26 +17,16 @@ describe('Frontend: Protección del Ingreso - DemoBlaze', () => {
     it('Debe iterar, encontrar el monitor más caro y comprarlo', () => {
         
         // 1. Visitar la URL base definida en la configuración
-        cy.visit('https://www.demoblaze.com/');
+        // Aumentamos el tiempo de espera de la página
+        cy.visit('https://www.demoblaze.com/', { timeout: 30000 });
 
         // 2. Ejecutar flujo de compra encapsulado en el Page Object
         // El POM mejora la legibilidad y facilita el mantenimiento si los selectores cambian.
         productPage.purchaseMostExpensiveProduct('VIP User', '4555 1234 5678');
 
-        /**
-         * ASERCIÓN DE NEGOCIO:
-         * Validamos que el modal de éxito de "SweetAlert" sea visible y contenga el mensaje correcto.
-         * Cypress maneja automáticamente la espera hasta que el elemento aparezca en el DOM.
-         */
-        cy.get('.sweet-alert h2')
-          .should('have.text', 'Thank you for your purchase!');
-
-        // 3. Cerrar el proceso para limpiar el estado de la UI
-        cy.contains('OK').click();
+        // REPARACIÓN: DemoBlaze usa alertas nativas o modales. 
+        // Esta aserción es más segura para detectar el éxito de la compra:
+        cy.contains('Thank you for your purchase!', { timeout: 10000 }).should('be.visible');
+        cy.get('.confirm').click(); // Cierra el modal de éxito
     });
-
-    /**
-     * @note El manejo de alertas nativas (window.confirm) se realiza de forma 
-     * transparente por Cypress, aceptándolas automáticamente para no bloquear el flujo.
-     */
 });
