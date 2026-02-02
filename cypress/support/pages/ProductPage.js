@@ -6,10 +6,9 @@
 export class ProductPage {
     // Selectores centralizados para fácil mantenimiento
     elements = {
-        monitorCategory: () => cy.contains('Monitors'),
+        monitorCategory: () => cy.contains('a', 'Monitors'),
         productCards: () => cy.get('.card'),
-        productPrice: () => cy.get('h5'),
-        addToCartBtn: () => cy.contains('Add to cart'),
+        addToCartBtn: () => cy.contains('a', 'Add to cart'),
         cartLink: () => cy.get('#cartur'),
         placeOrderBtn: () => cy.get('.btn-success').contains('Place Order')
     }
@@ -19,16 +18,14 @@ export class ProductPage {
      * @description Encuentra dinámicamente el producto con el precio más alto y lo compra.
      */
     purchaseMostExpensiveProduct(name, card) {
+        // 1. Ir a categoría y esperar a que la URL cambie o la lista se refresque
         this.elements.monitorCategory().click();
-        
-        // Esperamos a que los productos carguen
-        this.elements.productCards().should('be.visible');
+        cy.wait(2000); // Tiempo de gracia para que el DOM de DemoBlaze se estabilice
 
         let maxPrice = 0;
         let mostExpensiveName = '';
 
-        // Iterar para encontrar el precio y el NOMBRE del más caro
-        cy.get('.card').each(($el) => {
+        this.elements.productCards().should('be.visible').each(($el) => {
             const priceText = $el.find('h5').text().replace('$', '');
             const price = parseFloat(priceText);
             const productName = $el.find('a.hrefch').text();
@@ -38,22 +35,20 @@ export class ProductPage {
                 mostExpensiveName = productName.trim();
             }
         }).then(() => {
-            // Buscamos el nombre y hacemos clic
-            cy.contains('a.hrefch', mostExpensiveName).click();
+            // 2. RE-INTENTO: Buscamos el elemento de nuevo justo antes del clic
+            // Usamos una aserción de existencia para asegurar que el DOM está listo
+            cy.contains('a', mostExpensiveName).should('exist').click({ force: true });
             
-            // Manejo de la alerta y flujo de carrito
-            this.elements.addToCartBtn().click();
+            // 3. Flujo de compra con esperas entre acciones
+            this.elements.addToCartBtn().should('be.visible').click();
             this.elements.cartLink().click();
             
-            // Esperar a que el botón de pedido sea visible antes de clicar
             this.elements.placeOrderBtn().should('be.visible').click();
             
-            // Llenado de formulario con pequeños ajustes de estabilidad
-            cy.get('#name').should('be.visible').type(name, { force: true });
-            cy.get('#card').should('be.visible').type(card, { force: true });
+            cy.get('#name').should('be.visible').type(name, { delay: 100 });
+            cy.get('#card').should('be.visible').type(card, { delay: 100 });
             
-            // Clic final en Purchase
-            cy.contains('button', 'Purchase').click({ force: true });
+            cy.contains('button', 'Purchase').click();
         });
     }
 }

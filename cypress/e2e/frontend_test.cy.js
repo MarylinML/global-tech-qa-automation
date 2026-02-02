@@ -17,16 +17,14 @@ describe('Frontend: Protección del Ingreso - DemoBlaze', () => {
     it('Debe iterar, encontrar el monitor más caro y comprarlo', () => {
         
         // 1. Visitar la URL base definida en la configuración
-        // Aumentamos el tiempo de espera de la página
-        cy.visit('https://www.demoblaze.com/', { timeout: 30000 });
+        cy.visit('https://www.demoblaze.com/');
 
         // 2. Ejecutar flujo de compra encapsulado en el Page Object
         // El POM mejora la legibilidad y facilita el mantenimiento si los selectores cambian.
         productPage.purchaseMostExpensiveProduct('VIP User', '4555 1234 5678');
-
-        // REPARACIÓN: DemoBlaze usa alertas nativas o modales. 
-        // Esta aserción es más segura para detectar el éxito de la compra:
-        cy.contains('Thank you for your purchase!', { timeout: 10000 }).should('be.visible');
-        cy.get('.confirm').click(); // Cierra el modal de éxito
+        
+        // Esperamos el mensaje de éxito con un timeout extendido
+        cy.contains('Thank you for your purchase!', { timeout: 15000 }).should('be.visible');
+        cy.contains('OK').click();
     });
 });
